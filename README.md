@@ -25,6 +25,140 @@ It’s not about doing everything. It’s about doing **two things really well.*
 | 📈 **D. Batch ETL + Top Performer API** | Parse 10k CSV rows, compute engagement scores, expose top-performers | 3 hrs |
 
 ---
+---
+## 🌀 Section A – Campaign Orchestrator Service
+**Objective**  
+Own the campaign lifecycle and deliver webhooks reliably.
+
+| Area | Spec |
+|------|------|
+| **Core Endpoints** | `POST /campaigns` (create) • `PATCH /campaigns/:id` (update) |
+| **Event Bus** | Publish `CampaignCreated` / `CampaignUpdated` to Kafka ⬌ RabbitMQ ⬌ Redis Streams |
+| **Webhook Worker** | POST each event to `https://mock.endpoint/campaign` <br>• 3‑try exponential back‑off <br>• Dead‑Letter Queue after final failure |
+| **Audit Log** | Persist `{ id, eventType, campaignId, attempt, status, timestamp }` |
+| **Query API** | `GET /logs?campaignId=` → full delivery history |
+| **Success Criteria** | JWT‑secured, idempotent, retries demonstrable by logs/tests, Postman docs |
+
+---
+
+## 💡 Section B – AI Brief Generator
+**Objective**  
+Generate structured influencer briefs via an LLM and internal “tools”.
+
+| Area | Spec |
+|------|------|
+| **Endpoint** | `POST /generate‑brief` `{ brand, product, goal, platform }` |
+| **Tools (Functions)** | `trendFetcher()` → 3 hashtags • `personaClassifier()` • `creativeAngle()` |
+| **LLM Orchestration** | OpenAI / Ollama / HF + LangChain or function‑calling; output JSON brief (caption, hookIdeas, hashtags, CTA, tone) |
+| **Caching** | Redis keyed by request hash; sensible TTL |
+| **Resilience** | Retry LLM timeouts; only final failure returns 5xx |
+| **Success Criteria** | Modular prompt templates, cache <100 ms on repeat, unit test for tool‑chain |
+
+---
+
+## 📊 Section C – Streaming Metrics Pipeline
+**Objective**  
+Ingest live engagement events and expose rolling analytics.
+
+| Area | Spec |
+|------|------|
+| **Ingestion** | Consume JSON events from Kafka / Redis Streams / PubSub |
+| **Computation** | Maintain stats per campaign: last 1 h • last 24 h • cumulative |
+| **Storage** | Time‑series DB (Timescale) or bucketed SQL tables |
+| **Query API** | `GET /campaigns/:id/metrics` → `{ window1h, window24h, total }` |
+| **Latency Target** | ≤ 300 ms cold response |
+| **Success Criteria** | Consumer processes sample stream, README explains windowing, benchmark proves latency |
+
+---
+
+## 📈 Section D – Batch ETL & Top‑Performer API
+**Objective**  
+Crunch a 10 k‑row CSV and surface highest‑engagement creators.
+
+| Area | Spec |
+|------|------|
+| **ETL Script** | Chunk‑read `performance.csv`; compute `engRate = (likes+comments+shares)/views*100` |
+| **Storage** | `campaignId, influencerId, engagementRate` |
+| **API** | `GET /top‑performers?campaignId=&limit=` • sorted desc |
+| **Runtime Budget** | < 2 min on 10 k rows |
+| **Success Criteria** | Skips malformed rows, make‑style ETL command, unit test for rate + sorting |
+
+---
+
+### 🌍 Global Expectations
+1. **Pick any two sections** and go deep.  
+2. Docker / `make` spin‑up in ≤ 3 steps.  
+3. No secrets in repo — use `.env.example`.  
+4. Clear commit history + docs.  
+5. Bonus extras (deployment, RAG, observability) are nice‑to‑haves, not required.
+---
+## 🌀 Section A – Campaign Orchestrator Service
+**Objective**  
+Own the campaign lifecycle and deliver webhooks reliably.
+
+| Area | Spec |
+|------|------|
+| **Core Endpoints** | `POST /campaigns` (create) • `PATCH /campaigns/:id` (update) |
+| **Event Bus** | Publish `CampaignCreated` / `CampaignUpdated` to Kafka ⬌ RabbitMQ ⬌ Redis Streams |
+| **Webhook Worker** | POST each event to `https://mock.endpoint/campaign` <br>• 3‑try exponential back‑off <br>• Dead‑Letter Queue after final failure |
+| **Audit Log** | Persist `{ id, eventType, campaignId, attempt, status, timestamp }` |
+| **Query API** | `GET /logs?campaignId=` → full delivery history |
+| **Success Criteria** | JWT‑secured, idempotent, retries demonstrable by logs/tests, Postman docs |
+
+---
+
+## 💡 Section B – AI Brief Generator
+**Objective**  
+Generate structured influencer briefs via an LLM and internal “tools”.
+
+| Area | Spec |
+|------|------|
+| **Endpoint** | `POST /generate‑brief` `{ brand, product, goal, platform }` |
+| **Tools (Functions)** | `trendFetcher()` → 3 hashtags • `personaClassifier()` • `creativeAngle()` |
+| **LLM Orchestration** | OpenAI / Ollama / HF + LangChain or function‑calling; output JSON brief (caption, hookIdeas, hashtags, CTA, tone) |
+| **Caching** | Redis keyed by request hash; sensible TTL |
+| **Resilience** | Retry LLM timeouts; only final failure returns 5xx |
+| **Success Criteria** | Modular prompt templates, cache <100 ms on repeat, unit test for tool‑chain |
+
+---
+
+## 📊 Section C – Streaming Metrics Pipeline
+**Objective**  
+Ingest live engagement events and expose rolling analytics.
+
+| Area | Spec |
+|------|------|
+| **Ingestion** | Consume JSON events from Kafka / Redis Streams / PubSub |
+| **Computation** | Maintain stats per campaign: last 1 h • last 24 h • cumulative |
+| **Storage** | Time‑series DB (Timescale) or bucketed SQL tables |
+| **Query API** | `GET /campaigns/:id/metrics` → `{ window1h, window24h, total }` |
+| **Latency Target** | ≤ 300 ms cold response |
+| **Success Criteria** | Consumer processes sample stream, README explains windowing, benchmark proves latency |
+
+---
+
+## 📈 Section D – Batch ETL & Top‑Performer API
+**Objective**  
+Crunch a 10 k‑row CSV and surface highest‑engagement creators.
+
+| Area | Spec |
+|------|------|
+| **ETL Script** | Chunk‑read `performance.csv`; compute `engRate = (likes+comments+shares)/views*100` |
+| **Storage** | `campaignId, influencerId, engagementRate` |
+| **API** | `GET /top‑performers?campaignId=&limit=` • sorted desc |
+| **Runtime Budget** | < 2 min on 10 k rows |
+| **Success Criteria** | Skips malformed rows, make‑style ETL command, unit test for rate + sorting |
+
+---
+
+### 🌍 Global Expectations
+1. **Pick any two sections** and go deep.  
+2. Docker / `make` spin‑up in ≤ 3 steps.  
+3. No secrets in repo — use `.env.example`.  
+4. Clear commit history + docs.  
+5. Bonus extras (deployment, RAG, observability) are nice‑to‑haves, not required.
+
+---
 
 ## 🌟 Bonus (Optional)
 
