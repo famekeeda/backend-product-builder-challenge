@@ -173,7 +173,7 @@ We respond to every candidate within 7 days of submission. Standout entries get 
 
 ## 👋 Final Note
 
-This is not a “test.” It’s your chance to **build something real**, just like we do every week. If you love blending AI with scalable backend systems, you’ll love this role.
+This is not just a “test.” It’s your chance to **build something real**, just like we do every week. If you love blending AI with scalable backend systems, you’ll love this role.
 
 We can’t wait to see what you create.
 
