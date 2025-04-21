@@ -5,10 +5,6 @@ Technical assessment for Fame Keeda’s AI-first backend engineering role. Focus
 
 Build backend systems that power real-time influencer marketing, campaign orchestration, and AI-driven automation. This is your chance to show us how you think, not just how you code.
 
----
-
-## 📦 Repository Name: `fk-backend-product-challenge`
-
 ### 📝 Description:
 This repo contains the technical assessment for candidates applying for the **Backend/API Developer (AI Integration)** role at Fame Keeda. The challenge is designed to simulate real-world use cases we handle at scale — spanning campaign workflows, LLM integrations, and streaming influencer analytics.
 
