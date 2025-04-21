@@ -1,6 +1,3 @@
-# backend-product-builder-challenge
-Technical assessment for Fame Keeda’s AI-first backend engineering role. Focused on campaign orchestration, LLM integrations, and high-scale data systems.
-
 # 🧪 Fame Keeda — Backend Product Builder Challenge
 
 Build backend systems that power real-time influencer marketing, campaign orchestration, and AI-driven automation. This is your chance to show us how you think, not just how you code.
